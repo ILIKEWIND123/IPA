@@ -30,14 +30,19 @@ for (jkl in 1:10) {
   ##################################################################
   # Train individual base models on full training data
   
+  ctrl <- trainControl(
+    method = "cv",        # 交叉验证
+    number = 5
+  )
+  
   # 1. Random Forest
-  trainpre_model1 = train(CHL ~ ., data = Traindata, method = "rf")
+  trainpre_model1 = train(CHL ~ ., data = Traindata, method = "rf",trControl = ctrl)
   
   # 2. K-Nearest Neighbors
-  trainpre_model2 = train(CHL ~ ., data = Traindata, method = "knn")
+  trainpre_model2 = train(CHL ~ ., data = Traindata, method = "knn",trControl = ctrl)
   
   # 3. Support Vector Machine with Radial Basis Function Kernel
-  trainpre_model3 = train(CHL ~ ., data = Traindata, method = "svmRadial")
+  trainpre_model3 = train(CHL ~ ., data = Traindata, method = "svmRadial",trControl = ctrl)
   
   # 4. Partial Least Squares Regression
   trainpre_model4 = plsr(CHL ~ ., data = Traindata, ncomp = 10, validation = "CV")
@@ -46,7 +51,7 @@ for (jkl in 1:10) {
   trainpre_model5 = cv.glmnet(x = Traindata[, -1] %>% as.matrix(), y = Traindata[, 1], nfolds = 5)
   
   # 6. Extreme Gradient Boosting
-  trainpre_model6 = train(CHL ~ ., data = Traindata, method = "xgbTree")
+  trainpre_model6 = train(CHL ~ ., data = Traindata, method = "xgbTree",trControl = ctrl)
   
   # 7. Deep Neural Network using H2O
   h2o.Traindata = as.h2o(Traindata)
@@ -60,7 +65,7 @@ for (jkl in 1:10) {
   )
   
   # 8. Gaussian Process Regression
-  trainpre_model8 = train(CHL ~ ., data = Traindata, method = "gaussprRadial")
+  trainpre_model8 = train(CHL ~ ., data = Traindata, method = "gaussprRadial",trControl = ctrl)
   
   # Generate predictions on test data using all base models
   test_one_1 = predict(trainpre_model1, newdata = Testdata)
@@ -113,12 +118,12 @@ for (jkl in 1:10) {
     fold_train = Traindata[-folds[[i]], ]
     
     # Train base models on current training fold
-    CV_trainpre_model1 = train(CHL ~ ., data = fold_train, method = "rf")
-    CV_trainpre_model2 = train(CHL ~ ., data = fold_train, method = "knn")
-    CV_trainpre_model3 = train(CHL ~ ., data = fold_train, method = "svmRadial")
+    CV_trainpre_model1 = train(CHL ~ ., data = fold_train, method = "rf",trControl = ctrl)
+    CV_trainpre_model2 = train(CHL ~ ., data = fold_train, method = "knn",trControl = ctrl)
+    CV_trainpre_model3 = train(CHL ~ ., data = fold_train, method = "svmRadial",trControl = ctrl)
     CV_trainpre_model4 = plsr(CHL ~ ., data = fold_train, ncomp = 10, validation = "CV")
     CV_trainpre_model5 = cv.glmnet(x = fold_train[, -1] %>% as.matrix(), y = fold_train[, 1], nfolds = 5)
-    CV_trainpre_model6 = train(CHL ~ ., data = fold_train, method = "xgbTree")
+    CV_trainpre_model6 = train(CHL ~ ., data = fold_train, method = "xgbTree",trControl = ctrl)
     
     # H2O Deep Learning
     CV_h2o.Traindata = as.h2o(fold_train)
@@ -130,7 +135,7 @@ for (jkl in 1:10) {
       hidden = c(64, 128, 256, 512, 512, 1024),
       epochs = 200
     )
-    CV_trainpre_model8 = train(CHL ~ ., data = fold_train, method = "gaussprRadial")
+    CV_trainpre_model8 = train(CHL ~ ., data = fold_train, method = "gaussprRadial",trControl = ctrl)
     
     # Generate predictions on validation fold
     CV_test_one_1 = predict(CV_trainpre_model1, newdata = fold_test)
